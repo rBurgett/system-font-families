@@ -15,6 +15,11 @@ const getFontLocations = () => {
 
     } else if(platform === 'windows') {
 
+        const home = process.env.HOME || process.env.USERPROFILE;
+        return [
+            path.join(home, 'Fonts')
+        ];
+
     } else if(platform === 'linux') {
         return [];
     }

@@ -23,7 +23,11 @@ var getFontLocations = function getFontLocations() {
 
         var home = process.env.HOME;
         return [_path2.default.join(home, 'Library', 'Fonts'), _path2.default.join('/', 'Library', 'Fonts')];
-    } else if (platform === 'windows') {} else if (platform === 'linux') {
+    } else if (platform === 'windows') {
+
+        var _home = process.env.HOME || process.env.USERPROFILE;
+        return [_path2.default.join(_home, 'Fonts')];
+    } else if (platform === 'linux') {
         return [];
     }
 };
