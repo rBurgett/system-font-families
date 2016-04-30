@@ -1,7 +1,7 @@
 {
   "name": "system-font-families",
   "version": "0.1.0",
-  "description": "Get system font families (all TTF, OTF, and WOFF) using only JavaScript",
+  "description": "Get system font families (all TTF and OTF) using only JavaScript",
   "main": "dist/main.js",
   "scripts": {
     "build": "babel src --out-dir dist",
