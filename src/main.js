@@ -3,6 +3,7 @@ import path from 'path';
 import opentype from '../opentype/opentype.js';
 
 const getPlatform = () => (process.platform === 'darwin') ? 'osx' : (/win/.test(process.platform) ? 'windows' : 'linux');
+
 const getFontLocations = () => {
     const platform = getPlatform();
     if(platform === 'osx') {
@@ -15,9 +16,9 @@ const getFontLocations = () => {
 
     } else if(platform === 'windows') {
 
-        const home = process.env.HOME || process.env.USERPROFILE;
+        const winDir = process.env.windir || process.env.WINDIR;
         return [
-            path.join(home, 'Fonts')
+            path.join(winDir, 'Fonts')
         ];
 
     } else if(platform === 'linux') {

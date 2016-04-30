@@ -17,6 +17,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 var getPlatform = function getPlatform() {
     return process.platform === 'darwin' ? 'osx' : /win/.test(process.platform) ? 'windows' : 'linux';
 };
+
 var getFontLocations = function getFontLocations() {
     var platform = getPlatform();
     if (platform === 'osx') {
@@ -25,8 +26,8 @@ var getFontLocations = function getFontLocations() {
         return [_path2.default.join(home, 'Library', 'Fonts'), _path2.default.join('/', 'Library', 'Fonts')];
     } else if (platform === 'windows') {
 
-        var _home = process.env.HOME || process.env.USERPROFILE;
-        return [_path2.default.join(_home, 'Fonts')];
+        var winDir = process.env.windir || process.env.WINDIR;
+        return [_path2.default.join(winDir, 'Fonts')];
     } else if (platform === 'linux') {
         return [];
     }
