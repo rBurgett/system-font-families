@@ -69,34 +69,36 @@ var getFontFiles = function getFontFiles() {
     }, []);
 };
 
-var getSystemFonts = function getSystemFonts() {
-    var promiseList = [];
-    getFontFiles().forEach(function (file) {
-        promiseList.push(new Promise(function (resolve) {
-            (0, _ttfinfo2.default)(file, function (err, fontMeta) {
-                if (!fontMeta) {
-                    resolve('');
-                } else {
-                    resolve(fontMeta.tables.name['1']);
-                }
-            });
-        }));
-    });
-    return new Promise(function (resolve, reject) {
-        Promise.all(promiseList).then(function (res) {
-
-            var names = res.filter(function (data) {
-                return data ? true : false;
-            }).reduce(function (obj, name) {
-                obj[name] = 1;
-                return obj;
-            }, {});
-
-            resolve(Object.keys(names));
-        }, function (err) {
-            return reject(err);
+var SystemFonts = function SystemFonts() {
+    this.getFonts = function () {
+        var promiseList = [];
+        getFontFiles().forEach(function (file) {
+            promiseList.push(new Promise(function (resolve) {
+                (0, _ttfinfo2.default)(file, function (err, fontMeta) {
+                    if (!fontMeta) {
+                        resolve('');
+                    } else {
+                        resolve(fontMeta.tables.name['1']);
+                    }
+                });
+            }));
         });
-    });
+        return new Promise(function (resolve, reject) {
+            Promise.all(promiseList).then(function (res) {
+
+                var names = res.filter(function (data) {
+                    return data ? true : false;
+                }).reduce(function (obj, name) {
+                    obj[name] = 1;
+                    return obj;
+                }, {});
+
+                resolve(Object.keys(names));
+            }, function (err) {
+                return reject(err);
+            });
+        });
+    };
 };
 
-exports.default = getSystemFonts;
+exports.default = SystemFonts;

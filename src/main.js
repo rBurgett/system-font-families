@@ -62,36 +62,38 @@ const getFontFiles = () => {
         }, []);
 };
 
-const getSystemFonts = () => {
-    let promiseList = [];
-    getFontFiles()
-        .forEach((file) => {
-            promiseList.push(new Promise((resolve) => {
-                ttfInfo(file, (err, fontMeta) => {
-                    if(!fontMeta) {
-                        resolve('');
-                    } else {
-                        resolve(fontMeta.tables.name['1']);
-                    }
-                });
-            }));
+const SystemFonts = function() {
+    this.getFonts = () => {
+        let promiseList = [];
+        getFontFiles()
+            .forEach((file) => {
+                promiseList.push(new Promise((resolve) => {
+                    ttfInfo(file, (err, fontMeta) => {
+                        if(!fontMeta) {
+                            resolve('');
+                        } else {
+                            resolve(fontMeta.tables.name['1']);
+                        }
+                    });
+                }));
+            });
+        return new Promise((resolve, reject) => {
+            Promise.all(promiseList).then(
+                (res) => {
+
+                    const names = res
+                        .filter((data) => data ? true : false)
+                        .reduce((obj, name) => {
+                            obj[name] = 1;
+                            return obj;
+                        }, {});
+
+                    resolve(Object.keys(names));
+                },
+                (err) => reject(err)
+            );
         });
-    return new Promise((resolve, reject) => {
-        Promise.all(promiseList).then(
-            (res) => {
-
-                const names = res
-                    .filter((data) => data ? true : false)
-                    .reduce((obj, name) => {
-                        obj[name] = 1;
-                        return obj;
-                    }, {});
-
-                resolve(Object.keys(names));
-            },
-            (err) => reject(err)
-        );
-    });
+    };
 };
 
-export default getSystemFonts;
+export default SystemFonts;
