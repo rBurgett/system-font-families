@@ -4,47 +4,68 @@ import opentype from '../opentype/opentype.js';
 
 const getPlatform = () => (process.platform === 'darwin') ? 'osx' : (/win/.test(process.platform) ? 'windows' : 'linux');
 
+const recGetFile = (target) => {
+    let stats;
+    try {
+        stats = fs.statSync(target);
+    } catch(e) {
+        // console.error(e);
+        return [];
+    }
+    if(stats.isDirectory()) {
+        let files;
+        try {
+            files = fs.readdirSync(target);
+        } catch(e) {
+            console.error(e);
+        }
+        return files
+            .reduce((arr, f) => {
+                return arr.concat(recGetFile(path.join(target, f)));
+            }, []);
+    } else {
+        const ext = path.extname(target).toLowerCase();
+        if(ext === ('.ttf' || '.otf')) {
+            return [ target ];
+        } else {
+            return [];
+        }
+    }
+};
+
 const getFontLocations = () => {
+    let directories;
     const platform = getPlatform();
     if(platform === 'osx') {
-
         const home = process.env.HOME;
-        return [
+        directories = [
             path.join(home, 'Library', 'Fonts'),
             path.join('/', 'Library', 'Fonts')
         ];
-
     } else if(platform === 'windows') {
-
         const winDir = process.env.windir || process.env.WINDIR;
-        return [
+        directories = [
             path.join(winDir, 'Fonts')
         ];
-
-    } else if(platform === 'linux') {
-        return [];
+    } else {    // some flavor of Linux, most likely
+        const home = process.env.HOME;
+        directories = [
+            path.join(home, '.fonts'),
+            path.join(home, '.local', 'share', 'fonts'),
+            path.join('/', 'usr', 'share', 'fonts'),
+            path.join('/', 'usr', 'local', 'share', 'fonts')
+        ];
     }
+    return directories
+        .reduce((arr, d) => {
+            return arr.concat(recGetFile(d));
+        }, []);
 };
 
 const getSystemFonts = {
     getFonts() {
         let promiseList = [];
         getFontLocations()
-            .reduce((arr, directory) => {
-                let files;
-                try {
-                    files = fs.readdirSync(directory);
-                } catch(e) {
-                    console.error(e);
-                }
-                const fontFamilies = files
-                    .filter((file) => {
-                        const ext = path.extname(file).toLowerCase();
-                        return ext === ('.ttf' || '.otf' || '.woff');
-                    })
-                    .map((file) => path.join(directory, file));
-                return arr.concat(fontFamilies);
-            }, [])
             .forEach((file) => {
                 promiseList.push(new Promise((resolve) => {
                     opentype.load(file, (err, font) => {

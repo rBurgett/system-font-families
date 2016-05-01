@@ -18,39 +18,57 @@ var getPlatform = function getPlatform() {
     return process.platform === 'darwin' ? 'osx' : /win/.test(process.platform) ? 'windows' : 'linux';
 };
 
-var getFontLocations = function getFontLocations() {
-    var platform = getPlatform();
-    if (platform === 'osx') {
-
-        var home = process.env.HOME;
-        return [_path2.default.join(home, 'Library', 'Fonts'), _path2.default.join('/', 'Library', 'Fonts')];
-    } else if (platform === 'windows') {
-
-        var winDir = process.env.windir || process.env.WINDIR;
-        return [_path2.default.join(winDir, 'Fonts')];
-    } else if (platform === 'linux') {
+var recGetFile = function recGetFile(target) {
+    var stats = void 0;
+    try {
+        stats = _fs2.default.statSync(target);
+    } catch (e) {
+        // console.error(e);
         return [];
     }
+    if (stats.isDirectory()) {
+        var files = void 0;
+        try {
+            files = _fs2.default.readdirSync(target);
+        } catch (e) {
+            console.error(e);
+        }
+        return files.reduce(function (arr, f) {
+            return arr.concat(recGetFile(_path2.default.join(target, f)));
+        }, []);
+    } else {
+        var ext = _path2.default.extname(target).toLowerCase();
+        if (ext === ('.ttf' || '.otf')) {
+            return [target];
+        } else {
+            return [];
+        }
+    }
+};
+
+var getFontLocations = function getFontLocations() {
+    var directories = void 0;
+    var platform = getPlatform();
+    if (platform === 'osx') {
+        var home = process.env.HOME;
+        directories = [_path2.default.join(home, 'Library', 'Fonts'), _path2.default.join('/', 'Library', 'Fonts')];
+    } else if (platform === 'windows') {
+        var winDir = process.env.windir || process.env.WINDIR;
+        directories = [_path2.default.join(winDir, 'Fonts')];
+    } else {
+        // some flavor of Linux, most likely
+        var _home = process.env.HOME;
+        directories = [_path2.default.join(_home, '.fonts'), _path2.default.join(_home, '.local', 'share', 'fonts'), _path2.default.join('/', 'usr', 'share', 'fonts'), _path2.default.join('/', 'usr', 'local', 'share', 'fonts')];
+    }
+    return directories.reduce(function (arr, d) {
+        return arr.concat(recGetFile(d));
+    }, []);
 };
 
 var getSystemFonts = {
     getFonts: function getFonts() {
         var promiseList = [];
-        getFontLocations().reduce(function (arr, directory) {
-            var files = void 0;
-            try {
-                files = _fs2.default.readdirSync(directory);
-            } catch (e) {
-                console.error(e);
-            }
-            var fontFamilies = files.filter(function (file) {
-                var ext = _path2.default.extname(file).toLowerCase();
-                return ext === ('.ttf' || '.otf' || '.woff');
-            }).map(function (file) {
-                return _path2.default.join(directory, file);
-            });
-            return arr.concat(fontFamilies);
-        }, []).forEach(function (file) {
+        getFontLocations().forEach(function (file) {
             promiseList.push(new Promise(function (resolve) {
                 _opentype2.default.load(file, function (err, font) {
                     if (!font) {
