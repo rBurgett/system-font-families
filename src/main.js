@@ -1,7 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-// import opentype from '../opentype/opentype.js';
-import ttfInfo from '../../ttfinfo';
+import ttfInfo from 'ttfinfo';
 
 const getPlatform = () => (process.platform === 'darwin') ? 'osx' : (/win/.test(process.platform) ? 'windows' : 'linux');
 

@@ -12,7 +12,7 @@ var _path = require('path');
 
 var _path2 = _interopRequireDefault(_path);
 
-var _ttfinfo = require('../../ttfinfo');
+var _ttfinfo = require('ttfinfo');
 
 var _ttfinfo2 = _interopRequireDefault(_ttfinfo);
 
@@ -21,8 +21,6 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 var getPlatform = function getPlatform() {
     return process.platform === 'darwin' ? 'osx' : /win/.test(process.platform) ? 'windows' : 'linux';
 };
-// import opentype from '../opentype/opentype.js';
-
 
 var recGetFile = function recGetFile(target) {
     var stats = void 0;
