@@ -12,15 +12,17 @@ var _path = require('path');
 
 var _path2 = _interopRequireDefault(_path);
 
-var _opentype = require('../opentype/opentype.js');
+var _ttfinfo = require('../../ttfinfo');
 
-var _opentype2 = _interopRequireDefault(_opentype);
+var _ttfinfo2 = _interopRequireDefault(_ttfinfo);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var getPlatform = function getPlatform() {
     return process.platform === 'darwin' ? 'osx' : /win/.test(process.platform) ? 'windows' : 'linux';
 };
+// import opentype from '../opentype/opentype.js';
+
 
 var recGetFile = function recGetFile(target) {
     var stats = void 0;
@@ -42,7 +44,7 @@ var recGetFile = function recGetFile(target) {
         }, []);
     } else {
         var ext = _path2.default.extname(target).toLowerCase();
-        if (ext === ('.ttf' || '.otf')) {
+        if (ext === '.ttf' || ext === '.otf') {
             return [target];
         } else {
             return [];
@@ -73,14 +75,11 @@ var getSystemFonts = function getSystemFonts() {
     var promiseList = [];
     getFontFiles().forEach(function (file) {
         promiseList.push(new Promise(function (resolve) {
-            _opentype2.default.load(file, function (err, font) {
-                if (!font) {
-                    // reject(err);
+            (0, _ttfinfo2.default)(file, function (err, fontMeta) {
+                if (!fontMeta) {
                     resolve('');
                 } else {
-                    var names = font.names.fontFamily;
-                    var fontFamily = names.en ? names.en : names[Object.keys(names)[0]];
-                    resolve(fontFamily);
+                    resolve(fontMeta.tables.name['1']);
                 }
             });
         }));
@@ -88,24 +87,12 @@ var getSystemFonts = function getSystemFonts() {
     return new Promise(function (resolve, reject) {
         Promise.all(promiseList).then(function (res) {
 
-            var names = void 0;
-            if (typeof res[0] === 'string') {
-                names = res.filter(function (data) {
-                    return data ? true : false;
-                }).reduce(function (obj, name) {
-                    obj[name] = 1;
-                    return obj;
-                }, {});
-            } else {
-                names = res.filter(function (data) {
-                    return data ? true : false;
-                }).map(function (data) {
-                    return data.tables.name['1'];
-                }).reduce(function (obj, name) {
-                    obj[name] = 1;
-                    return obj;
-                }, {});
-            }
+            var names = res.filter(function (data) {
+                return data ? true : false;
+            }).reduce(function (obj, name) {
+                obj[name] = 1;
+                return obj;
+            }, {});
 
             resolve(Object.keys(names));
         }, function (err) {

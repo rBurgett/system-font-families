@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
-import opentype from '../opentype/opentype.js';
+// import opentype from '../opentype/opentype.js';
+import ttfInfo from '../../ttfinfo';
 
 const getPlatform = () => (process.platform === 'darwin') ? 'osx' : (/win/.test(process.platform) ? 'windows' : 'linux');
 
@@ -25,7 +26,7 @@ const recGetFile = (target) => {
             }, []);
     } else {
         const ext = path.extname(target).toLowerCase();
-        if(ext === ('.ttf' || '.otf')) {
+        if(ext === '.ttf' || ext === '.otf') {
             return [ target ];
         } else {
             return [];
@@ -67,14 +68,11 @@ const getSystemFonts = () => {
     getFontFiles()
         .forEach((file) => {
             promiseList.push(new Promise((resolve) => {
-                opentype.load(file, (err, font) => {
-                    if(!font) {
-                        // reject(err);
+                ttfInfo(file, (err, fontMeta) => {
+                    if(!fontMeta) {
                         resolve('');
                     } else {
-                        const names = font.names.fontFamily;
-                        const fontFamily = names.en ? names.en : names[Object.keys(names)[0]];
-                        resolve(fontFamily);
+                        resolve(fontMeta.tables.name['1']);
                     }
                 });
             }));
@@ -83,23 +81,12 @@ const getSystemFonts = () => {
         Promise.all(promiseList).then(
             (res) => {
 
-                let names;
-                if(typeof res[0] === 'string') {
-                    names = res
-                        .filter((data) => data ? true : false)
-                        .reduce((obj, name) => {
-                            obj[name] = 1;
-                            return obj;
-                        }, {});
-                } else {
-                    names = res
-                        .filter((data) => data ? true : false)
-                        .map((data) => data.tables.name['1'])
-                        .reduce((obj, name) => {
-                            obj[name] = 1;
-                            return obj;
-                        }, {});
-                }
+                const names = res
+                    .filter((data) => data ? true : false)
+                    .reduce((obj, name) => {
+                        obj[name] = 1;
+                        return obj;
+                    }, {});
 
                 resolve(Object.keys(names));
             },

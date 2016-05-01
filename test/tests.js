@@ -5,7 +5,7 @@ import getSystemFonts from '../src/main';
 
 describe('getSystemFonts', function() {
 
-    this.timeout(30000);
+    this.timeout(10000);
 
     it('should return a Promise', () => {
         getSystemFonts().should.be.a.Promise();
