@@ -62,57 +62,50 @@ const getFontFiles = () => {
         }, []);
 };
 
-const getSystemFonts = {
-    getFonts() {
-        let promiseList = [];
-        getFontFiles()
-            .forEach((file) => {
-                promiseList.push(new Promise((resolve) => {
-                    opentype.load(file, (err, font) => {
-                        if(!font) {
-                            // reject(err);
-                            resolve('');
-                        } else {
-                            const names = font.names.fontFamily;
-                            const fontFamily = names.en ? names.en : names[Object.keys(names)[0]];
-                            resolve(fontFamily);
-                        }
-                    });
-                }));
-            });
-        return new Promise((resolve, reject) => {
-            Promise.all(promiseList).then(
-                (res) => {
-
-                    let names;
-                    if(typeof res[0] === 'string') {
-                        names = res
-                            .filter((data) => data ? true : false)
-                            .reduce((obj, name) => {
-                                obj[name] = 1;
-                                return obj;
-                            }, {});
+const getSystemFonts = () => {
+    let promiseList = [];
+    getFontFiles()
+        .forEach((file) => {
+            promiseList.push(new Promise((resolve) => {
+                opentype.load(file, (err, font) => {
+                    if(!font) {
+                        // reject(err);
+                        resolve('');
                     } else {
-                        names = res
-                            .filter((data) => data ? true : false)
-                            .map((data) => data.tables.name['1'])
-                            .reduce((obj, name) => {
-                                obj[name] = 1;
-                                return obj;
-                            }, {});
+                        const names = font.names.fontFamily;
+                        const fontFamily = names.en ? names.en : names[Object.keys(names)[0]];
+                        resolve(fontFamily);
                     }
-
-                    resolve(Object.keys(names));
-                },
-                (err) => reject(err)
-            );
+                });
+            }));
         });
-    }
+    return new Promise((resolve, reject) => {
+        Promise.all(promiseList).then(
+            (res) => {
+
+                let names;
+                if(typeof res[0] === 'string') {
+                    names = res
+                        .filter((data) => data ? true : false)
+                        .reduce((obj, name) => {
+                            obj[name] = 1;
+                            return obj;
+                        }, {});
+                } else {
+                    names = res
+                        .filter((data) => data ? true : false)
+                        .map((data) => data.tables.name['1'])
+                        .reduce((obj, name) => {
+                            obj[name] = 1;
+                            return obj;
+                        }, {});
+                }
+
+                resolve(Object.keys(names));
+            },
+            (err) => reject(err)
+        );
+    });
 };
 
-getSystemFonts.getFonts().then(
-    (res) => {
-        console.log(res.sort((a, b) => a.localeCompare(b)));
-    },
-    (err) => console.error(err)
-);
+export default getSystemFonts;

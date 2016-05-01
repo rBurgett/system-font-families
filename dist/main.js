@@ -1,5 +1,9 @@
 'use strict';
 
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
 var _fs = require('fs');
 
 var _fs2 = _interopRequireDefault(_fs);
@@ -65,57 +69,49 @@ var getFontFiles = function getFontFiles() {
     }, []);
 };
 
-var getSystemFonts = {
-    getFonts: function getFonts() {
-        var promiseList = [];
-        getFontFiles().forEach(function (file) {
-            promiseList.push(new Promise(function (resolve) {
-                _opentype2.default.load(file, function (err, font) {
-                    if (!font) {
-                        // reject(err);
-                        resolve('');
-                    } else {
-                        var names = font.names.fontFamily;
-                        var fontFamily = names.en ? names.en : names[Object.keys(names)[0]];
-                        resolve(fontFamily);
-                    }
-                });
-            }));
-        });
-        return new Promise(function (resolve, reject) {
-            Promise.all(promiseList).then(function (res) {
-
-                var names = void 0;
-                if (typeof res[0] === 'string') {
-                    names = res.filter(function (data) {
-                        return data ? true : false;
-                    }).reduce(function (obj, name) {
-                        obj[name] = 1;
-                        return obj;
-                    }, {});
+var getSystemFonts = function getSystemFonts() {
+    var promiseList = [];
+    getFontFiles().forEach(function (file) {
+        promiseList.push(new Promise(function (resolve) {
+            _opentype2.default.load(file, function (err, font) {
+                if (!font) {
+                    // reject(err);
+                    resolve('');
                 } else {
-                    names = res.filter(function (data) {
-                        return data ? true : false;
-                    }).map(function (data) {
-                        return data.tables.name['1'];
-                    }).reduce(function (obj, name) {
-                        obj[name] = 1;
-                        return obj;
-                    }, {});
+                    var names = font.names.fontFamily;
+                    var fontFamily = names.en ? names.en : names[Object.keys(names)[0]];
+                    resolve(fontFamily);
                 }
-
-                resolve(Object.keys(names));
-            }, function (err) {
-                return reject(err);
             });
+        }));
+    });
+    return new Promise(function (resolve, reject) {
+        Promise.all(promiseList).then(function (res) {
+
+            var names = void 0;
+            if (typeof res[0] === 'string') {
+                names = res.filter(function (data) {
+                    return data ? true : false;
+                }).reduce(function (obj, name) {
+                    obj[name] = 1;
+                    return obj;
+                }, {});
+            } else {
+                names = res.filter(function (data) {
+                    return data ? true : false;
+                }).map(function (data) {
+                    return data.tables.name['1'];
+                }).reduce(function (obj, name) {
+                    obj[name] = 1;
+                    return obj;
+                }, {});
+            }
+
+            resolve(Object.keys(names));
+        }, function (err) {
+            return reject(err);
         });
-    }
+    });
 };
 
-getSystemFonts.getFonts().then(function (res) {
-    console.log(res.sort(function (a, b) {
-        return a.localeCompare(b);
-    }));
-}, function (err) {
-    return console.error(err);
-});
+exports.default = getSystemFonts;
