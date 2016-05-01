@@ -33,7 +33,7 @@ const recGetFile = (target) => {
     }
 };
 
-const getFontLocations = () => {
+const getFontFiles = () => {
     let directories;
     const platform = getPlatform();
     if(platform === 'osx') {
@@ -65,7 +65,7 @@ const getFontLocations = () => {
 const getSystemFonts = {
     getFonts() {
         let promiseList = [];
-        getFontLocations()
+        getFontFiles()
             .forEach((file) => {
                 promiseList.push(new Promise((resolve) => {
                     opentype.load(file, (err, font) => {

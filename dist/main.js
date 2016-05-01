@@ -46,7 +46,7 @@ var recGetFile = function recGetFile(target) {
     }
 };
 
-var getFontLocations = function getFontLocations() {
+var getFontFiles = function getFontFiles() {
     var directories = void 0;
     var platform = getPlatform();
     if (platform === 'osx') {
@@ -68,7 +68,7 @@ var getFontLocations = function getFontLocations() {
 var getSystemFonts = {
     getFonts: function getFonts() {
         var promiseList = [];
-        getFontLocations().forEach(function (file) {
+        getFontFiles().forEach(function (file) {
             promiseList.push(new Promise(function (resolve) {
                 _opentype2.default.load(file, function (err, font) {
                     if (!font) {
