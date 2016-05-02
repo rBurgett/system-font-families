@@ -70,11 +70,14 @@ var getFontFiles = function getFontFiles() {
 };
 
 var SystemFonts = function SystemFonts() {
+
+    var fontFiles = getFontFiles();
+
     this.getFonts = function () {
         var promiseList = [];
-        getFontFiles().forEach(function (file) {
+        fontFiles.forEach(function (file) {
             promiseList.push(new Promise(function (resolve) {
-                (0, _ttfinfo2.default)(file, function (err, fontMeta) {
+                _ttfinfo2.default.get(file, function (err, fontMeta) {
                     if (!fontMeta) {
                         resolve('');
                     } else {
@@ -93,10 +96,32 @@ var SystemFonts = function SystemFonts() {
                     return obj;
                 }, {});
 
-                resolve(Object.keys(names));
+                resolve(Object.keys(names).sort(function (a, b) {
+                    return a.localeCompare(b);
+                }));
             }, function (err) {
                 return reject(err);
             });
+        });
+    };
+
+    this.getFontsSync = function () {
+        var names = fontFiles.reduce(function (arr, file) {
+            var data = void 0;
+            try {
+                data = _ttfinfo2.default.getSync(file);
+            } catch (e) {
+                return arr;
+            }
+            return arr.concat([data]);
+        }, []).map(function (fontMeta) {
+            return fontMeta.tables.name['1'];
+        }).reduce(function (obj, name) {
+            obj[name] = 1;
+            return obj;
+        }, {});
+        return Object.keys(names).sort(function (a, b) {
+            return a.localeCompare(b);
         });
     };
 };

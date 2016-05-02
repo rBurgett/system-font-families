@@ -63,12 +63,15 @@ const getFontFiles = () => {
 };
 
 const SystemFonts = function() {
+
+    const fontFiles = getFontFiles();
+
     this.getFonts = () => {
         let promiseList = [];
-        getFontFiles()
+        fontFiles
             .forEach((file) => {
                 promiseList.push(new Promise((resolve) => {
-                    ttfInfo(file, (err, fontMeta) => {
+                    ttfInfo.get(file, (err, fontMeta) => {
                         if(!fontMeta) {
                             resolve('');
                         } else {
@@ -88,12 +91,32 @@ const SystemFonts = function() {
                             return obj;
                         }, {});
 
-                    resolve(Object.keys(names));
+                    resolve(Object.keys(names).sort((a, b) => a.localeCompare(b)));
                 },
                 (err) => reject(err)
             );
         });
     };
+
+    this.getFontsSync = () => {
+        const names = fontFiles
+            .reduce((arr, file) => {
+                let data;
+                try {
+                    data = ttfInfo.getSync(file);
+                } catch(e) {
+                    return arr;
+                }
+                return arr.concat([ data ]);
+            }, [])
+            .map((fontMeta) => fontMeta.tables.name['1'])
+            .reduce((obj, name) => {
+                obj[name] = 1;
+                return obj;
+            }, {});
+        return Object.keys(names).sort((a, b) => a.localeCompare(b));
+    };
+
 };
 
 export default SystemFonts;

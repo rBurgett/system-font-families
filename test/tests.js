@@ -43,4 +43,25 @@ describe('SystemFonts', function() {
 
     });
 
+    describe('getFontsSync method', function() {
+
+        this.timeout(10000);
+
+        const systemFonts = new SystemFonts();
+
+        it('should return an array of strings', () => {
+            const fontList = systemFonts.getFontsSync();
+            const isArray = Array.isArray(fontList);
+            let containsStrings;
+            if(isArray && fontList.length > 0) {
+                containsStrings = fontList.reduce((bool, d) => {
+                    if(typeof d !== 'string') return false;
+                    return bool;
+                }, true);
+            }
+            containsStrings.should.be.True();
+        });
+
+    });
+
 });
