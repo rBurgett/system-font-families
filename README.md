@@ -7,21 +7,31 @@ $ npm install system-font-families
 ```
 ### Modern Usage
 ```
-import getSystemFonts from 'system-font-families';
+import SystemFonts from 'system-font-families';
 
-getSystemFonts().then(
+const systemFonts = new SystemFonts();
+
+// asynchronous
+systemFonts.getFonts().then(
   (res) => {
     // res is an array of font family strings
     // do something with the response
   },
   (err) => // handle the error
 );
+
+// synchronous
+const fontList = systemFonts.getFontsSync();
+
 ```
 ### Older Usage
 ```
-var getSystemFonts = require('system-font-families').default;
+var SystemFonts = require('system-font-families').default;
 
-getSystemFonts().then(
+var systemFonts = new SystemFonts();
+
+// asynchronous
+systemFonts.getFonts().then(
   function(res) {
     // do something with the response
   },
@@ -29,6 +39,10 @@ getSystemFonts().then(
     // handle the error
   }
 );
+
+// synchronous
+const fontList = systemFonts.getFontsSync();
+
 ```
 ### Notice
 This library will not throw an error if it finds a bad or incomplete font. It is designed to skip over any fonts which it has trouble reading.
