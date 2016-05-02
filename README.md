@@ -41,7 +41,7 @@ systemFonts.getFonts().then(
 );
 
 // synchronous
-const fontList = systemFonts.getFontsSync();
+var fontList = systemFonts.getFontsSync();
 
 ```
 ### Notice
