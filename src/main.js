@@ -62,36 +62,61 @@ const getFontFiles = () => {
         }, []);
 };
 
-const getSystemFonts = () => {
-    let promiseList = [];
-    getFontFiles()
-        .forEach((file) => {
-            promiseList.push(new Promise((resolve) => {
-                ttfInfo(file, (err, fontMeta) => {
-                    if(!fontMeta) {
-                        resolve('');
-                    } else {
-                        resolve(fontMeta.tables.name['1']);
-                    }
-                });
-            }));
+const SystemFonts = function() {
+
+    const fontFiles = getFontFiles();
+
+    this.getFonts = () => {
+        let promiseList = [];
+        fontFiles
+            .forEach((file) => {
+                promiseList.push(new Promise((resolve) => {
+                    ttfInfo.get(file, (err, fontMeta) => {
+                        if(!fontMeta) {
+                            resolve('');
+                        } else {
+                            resolve(fontMeta.tables.name['1']);
+                        }
+                    });
+                }));
+            });
+        return new Promise((resolve, reject) => {
+            Promise.all(promiseList).then(
+                (res) => {
+
+                    const names = res
+                        .filter((data) => data ? true : false)
+                        .reduce((obj, name) => {
+                            obj[name] = 1;
+                            return obj;
+                        }, {});
+
+                    resolve(Object.keys(names).sort((a, b) => a.localeCompare(b)));
+                },
+                (err) => reject(err)
+            );
         });
-    return new Promise((resolve, reject) => {
-        Promise.all(promiseList).then(
-            (res) => {
+    };
 
-                const names = res
-                    .filter((data) => data ? true : false)
-                    .reduce((obj, name) => {
-                        obj[name] = 1;
-                        return obj;
-                    }, {});
+    this.getFontsSync = () => {
+        const names = fontFiles
+            .reduce((arr, file) => {
+                let data;
+                try {
+                    data = ttfInfo.getSync(file);
+                } catch(e) {
+                    return arr;
+                }
+                return arr.concat([ data ]);
+            }, [])
+            .map((fontMeta) => fontMeta.tables.name['1'])
+            .reduce((obj, name) => {
+                obj[name] = 1;
+                return obj;
+            }, {});
+        return Object.keys(names).sort((a, b) => a.localeCompare(b));
+    };
 
-                resolve(Object.keys(names));
-            },
-            (err) => reject(err)
-        );
-    });
 };
 
-export default getSystemFonts;
+export default SystemFonts;

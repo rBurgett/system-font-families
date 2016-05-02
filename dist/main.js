@@ -69,34 +69,61 @@ var getFontFiles = function getFontFiles() {
     }, []);
 };
 
-var getSystemFonts = function getSystemFonts() {
-    var promiseList = [];
-    getFontFiles().forEach(function (file) {
-        promiseList.push(new Promise(function (resolve) {
-            (0, _ttfinfo2.default)(file, function (err, fontMeta) {
-                if (!fontMeta) {
-                    resolve('');
-                } else {
-                    resolve(fontMeta.tables.name['1']);
-                }
-            });
-        }));
-    });
-    return new Promise(function (resolve, reject) {
-        Promise.all(promiseList).then(function (res) {
+var SystemFonts = function SystemFonts() {
 
-            var names = res.filter(function (data) {
-                return data ? true : false;
-            }).reduce(function (obj, name) {
-                obj[name] = 1;
-                return obj;
-            }, {});
+    var fontFiles = getFontFiles();
 
-            resolve(Object.keys(names));
-        }, function (err) {
-            return reject(err);
+    this.getFonts = function () {
+        var promiseList = [];
+        fontFiles.forEach(function (file) {
+            promiseList.push(new Promise(function (resolve) {
+                _ttfinfo2.default.get(file, function (err, fontMeta) {
+                    if (!fontMeta) {
+                        resolve('');
+                    } else {
+                        resolve(fontMeta.tables.name['1']);
+                    }
+                });
+            }));
         });
-    });
+        return new Promise(function (resolve, reject) {
+            Promise.all(promiseList).then(function (res) {
+
+                var names = res.filter(function (data) {
+                    return data ? true : false;
+                }).reduce(function (obj, name) {
+                    obj[name] = 1;
+                    return obj;
+                }, {});
+
+                resolve(Object.keys(names).sort(function (a, b) {
+                    return a.localeCompare(b);
+                }));
+            }, function (err) {
+                return reject(err);
+            });
+        });
+    };
+
+    this.getFontsSync = function () {
+        var names = fontFiles.reduce(function (arr, file) {
+            var data = void 0;
+            try {
+                data = _ttfinfo2.default.getSync(file);
+            } catch (e) {
+                return arr;
+            }
+            return arr.concat([data]);
+        }, []).map(function (fontMeta) {
+            return fontMeta.tables.name['1'];
+        }).reduce(function (obj, name) {
+            obj[name] = 1;
+            return obj;
+        }, {});
+        return Object.keys(names).sort(function (a, b) {
+            return a.localeCompare(b);
+        });
+    };
 };
 
-exports.default = getSystemFonts;
+exports.default = SystemFonts;
