@@ -33,19 +33,21 @@ const recGetFile = (target) => {
     }
 };
 
-const tableToObj = (obj, file) => {
+const tableToObj = (obj, file, systemFont) => {
     return {
         family: obj['1'],
         subFamily: obj['2'],
-        file: file
+        file,
+        systemFont
     };
 };
 
-const extendedReducer = (m, { family, subFamily, file }) => {
+const extendedReducer = (m, { family, subFamily, file, systemFont }) => {
     if (m.has(family)) {
         const origFont = m.get(family);
         return m.set(family, {
             ...origFont,
+            systemFont: origFont.systemFont === false ? false : systemFont,
             subFamilies: [
                 ...origFont.subFamilies,
                 subFamily
@@ -58,6 +60,7 @@ const extendedReducer = (m, { family, subFamily, file }) => {
     } else {
         return m.set(family, {
             family,
+            systemFont,
             subFamilies: [subFamily],
             files: {
                 [subFamily]: file
@@ -137,7 +140,7 @@ const SystemFonts = function(options = {}) {
                         if (!fontMeta) {
                             resolve(null);
                         } else {
-                            resolve(tableToObj(fontMeta.tables.name, file));
+                            resolve(tableToObj(fontMeta.tables.name, file, !customFontFiles.has(file)));
                         }
                     });
                 }));
@@ -173,7 +176,7 @@ const SystemFonts = function(options = {}) {
                 } catch (e) {
                     return arr;
                 }
-                return arr.concat([tableToObj(data.tables.name, file)]);
+                return arr.concat([tableToObj(data.tables.name, file, !customFontFiles.has(file))]);
             }, [])
             .filter(data => data ? true : false)
             .reduce(extendedReducer, new Map());
