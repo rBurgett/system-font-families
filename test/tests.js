@@ -5,8 +5,8 @@ import SystemFonts from '../src/main';
 import _ from 'lodash';
 import path from 'path';
 
-const customFontFolder = path.join('/', 'Users', 'ryan', 'projects', 'system-font-families', 'test', 'test-folder');
-//Users/ryan/projects/system-font-families/test/test-folder
+const customFontFolder = path.join('test', 'test-folder');
+
 describe('SystemFonts', function() {
 
     it('should be a Function', () => {
