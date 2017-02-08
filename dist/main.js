@@ -4,6 +4,34 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
+var _keys = require('babel-runtime/core-js/object/keys');
+
+var _keys2 = _interopRequireDefault(_keys);
+
+var _stringify = require('babel-runtime/core-js/json/stringify');
+
+var _stringify2 = _interopRequireDefault(_stringify);
+
+var _map = require('babel-runtime/core-js/map');
+
+var _map2 = _interopRequireDefault(_map);
+
+var _promise = require('babel-runtime/core-js/promise');
+
+var _promise2 = _interopRequireDefault(_promise);
+
+var _defineProperty2 = require('babel-runtime/helpers/defineProperty');
+
+var _defineProperty3 = _interopRequireDefault(_defineProperty2);
+
+var _toConsumableArray2 = require('babel-runtime/helpers/toConsumableArray');
+
+var _toConsumableArray3 = _interopRequireDefault(_toConsumableArray2);
+
+var _extends3 = require('babel-runtime/helpers/extends');
+
+var _extends4 = _interopRequireDefault(_extends3);
+
 var _fs = require('fs');
 
 var _fs2 = _interopRequireDefault(_fs);
@@ -73,10 +101,71 @@ var SystemFonts = function SystemFonts() {
 
     var fontFiles = getFontFiles();
 
+    var tableToObj = function tableToObj(obj, file) {
+        return {
+            family: obj['1'],
+            subFamily: obj['2'],
+            file: file
+        };
+    };
+
+    var extendedReducer = function extendedReducer(m, _ref) {
+        var family = _ref.family;
+        var subFamily = _ref.subFamily;
+        var file = _ref.file;
+
+        if (m.has(family)) {
+            var origFont = m.get(family);
+            return m.set(family, (0, _extends4.default)({}, origFont, {
+                subFamilies: [].concat((0, _toConsumableArray3.default)(origFont.subFamilies), [subFamily]),
+                files: (0, _extends4.default)({}, origFont.files, (0, _defineProperty3.default)({}, subFamily, file))
+            }));
+        } else {
+            return m.set(family, {
+                family: family,
+                subFamilies: [subFamily],
+                files: (0, _defineProperty3.default)({}, subFamily, file)
+            });
+        }
+    };
+
+    this.getFontsExtended = function () {
+        var promiseList = [];
+        fontFiles.forEach(function (file) {
+            promiseList.push(new _promise2.default(function (resolve) {
+                _ttfinfo2.default.get(file, function (err, fontMeta) {
+                    if (!fontMeta) {
+                        resolve(null);
+                    } else {
+                        resolve(tableToObj(fontMeta.tables.name, file));
+                    }
+                });
+            }));
+        });
+        return new _promise2.default(function (resolve, reject) {
+            _promise2.default.all(promiseList).then(function (res) {
+
+                var names = res.filter(function (data) {
+                    return data ? true : false;
+                }).reduce(extendedReducer, new _map2.default());
+
+                var namesArr = [].concat((0, _toConsumableArray3.default)(names.values())).sort(function (a, b) {
+                    return a.family.localeCompare(b.family);
+                });
+
+                _fs2.default.writeFileSync('names.json', (0, _stringify2.default)(namesArr, null, '  '), 'utf8');
+
+                resolve(namesArr);
+            }, function (err) {
+                return reject(err);
+            });
+        });
+    };
+
     this.getFonts = function () {
         var promiseList = [];
         fontFiles.forEach(function (file) {
-            promiseList.push(new Promise(function (resolve) {
+            promiseList.push(new _promise2.default(function (resolve) {
                 _ttfinfo2.default.get(file, function (err, fontMeta) {
                     if (!fontMeta) {
                         resolve('');
@@ -86,8 +175,8 @@ var SystemFonts = function SystemFonts() {
                 });
             }));
         });
-        return new Promise(function (resolve, reject) {
-            Promise.all(promiseList).then(function (res) {
+        return new _promise2.default(function (resolve, reject) {
+            _promise2.default.all(promiseList).then(function (res) {
 
                 var names = res.filter(function (data) {
                     return data ? true : false;
@@ -96,7 +185,7 @@ var SystemFonts = function SystemFonts() {
                     return obj;
                 }, {});
 
-                resolve(Object.keys(names).sort(function (a, b) {
+                resolve((0, _keys2.default)(names).sort(function (a, b) {
                     return a.localeCompare(b);
                 }));
             }, function (err) {
@@ -120,7 +209,7 @@ var SystemFonts = function SystemFonts() {
             obj[name] = 1;
             return obj;
         }, {});
-        return Object.keys(names).sort(function (a, b) {
+        return (0, _keys2.default)(names).sort(function (a, b) {
             return a.localeCompare(b);
         });
     };
