@@ -33,35 +33,6 @@ const recGetFile = (target) => {
     }
 };
 
-const getFontFiles = () => {
-    let directories;
-    const platform = getPlatform();
-    if (platform === 'osx') {
-        const home = process.env.HOME;
-        directories = [
-            path.join(home, 'Library', 'Fonts'),
-            path.join('/', 'Library', 'Fonts')
-        ];
-    } else if (platform === 'windows') {
-        const winDir = process.env.windir || process.env.WINDIR;
-        directories = [
-            path.join(winDir, 'Fonts')
-        ];
-    } else { // some flavor of Linux, most likely
-        const home = process.env.HOME;
-        directories = [
-            path.join(home, '.fonts'),
-            path.join(home, '.local', 'share', 'fonts'),
-            path.join('/', 'usr', 'share', 'fonts'),
-            path.join('/', 'usr', 'local', 'share', 'fonts')
-        ];
-    }
-    return directories
-        .reduce((arr, d) => {
-            return arr.concat(recGetFile(d));
-        }, []);
-};
-
 const tableToObj = (obj, file) => {
     return {
         family: obj['1'],
@@ -95,13 +66,71 @@ const extendedReducer = (m, { family, subFamily, file }) => {
     }
 };
 
-const SystemFonts = function() {
+const SystemFonts = function(options = {}) {
+
+    const { ignoreSystemFonts = false, customDirs = [] } = options;
+
+    if (!Array.isArray(customDirs)) {
+        throw new Error('customDirs must be an array of folder path strings');
+    }
+
+    const customDirSet = new Set(customDirs);
+    const customFontFiles = new Set();
+
+    const getFontFiles = () => {
+
+        let directories = [];
+
+        if (customDirs.length > 0) {
+            directories = [...customDirs];
+        }
+
+        const platform = getPlatform();
+        if (platform === 'osx') {
+            const home = process.env.HOME;
+            directories = [
+                ...directories,
+                path.join(home, 'Library', 'Fonts'),
+                path.join('/', 'Library', 'Fonts')
+            ];
+        } else if (platform === 'windows') {
+            const winDir = process.env.windir || process.env.WINDIR;
+            directories = [
+                ...directories,
+                path.join(winDir, 'Fonts')
+            ];
+        } else { // some flavor of Linux, most likely
+            const home = process.env.HOME;
+            directories = [
+                ...directories,
+                path.join(home, '.fonts'),
+                path.join(home, '.local', 'share', 'fonts'),
+                path.join('/', 'usr', 'share', 'fonts'),
+                path.join('/', 'usr', 'local', 'share', 'fonts')
+            ];
+        }
+
+        const filesArr = directories
+            .reduce((arr, d) => {
+                const files = recGetFile(d);
+                if (customDirSet.has(d)) {
+                    files.forEach(f => customFontFiles.add(f));
+                }
+                return arr.concat(files);
+            }, []);
+
+        return filesArr;
+    };
 
     const fontFiles = getFontFiles();
 
     this.getFontsExtended = () => {
         const promiseList = [];
-        fontFiles
+
+        const filteredFontFiles = !ignoreSystemFonts ? [...fontFiles] : fontFiles
+            .filter(f => customFontFiles.has(f));
+
+        filteredFontFiles
             .forEach(file => {
                 promiseList.push(new Promise((resolve) => {
                     ttfInfo.get(file, (err, fontMeta) => {
@@ -132,7 +161,11 @@ const SystemFonts = function() {
     };
 
     this.getFontsExtendedSync = () => {
-        const names = fontFiles
+
+        const filteredFontFiles = !ignoreSystemFonts ? [...fontFiles] : fontFiles
+            .filter(f => customFontFiles.has(f));
+
+        const names = filteredFontFiles
             .reduce((arr, file) => {
                 let data;
                 try {
@@ -154,6 +187,7 @@ const SystemFonts = function() {
     this.getFonts = () => {
         const promiseList = [];
         fontFiles
+            .filter(f => !customFontFiles.has(f))
             .forEach((file) => {
                 promiseList.push(new Promise((resolve) => {
                     ttfInfo.get(file, (err, fontMeta) => {
@@ -185,6 +219,7 @@ const SystemFonts = function() {
 
     this.getFontsSync = () => {
         const names = fontFiles
+            .filter(f => !customFontFiles.has(f))
             .reduce((arr, file) => {
                 let data;
                 try {

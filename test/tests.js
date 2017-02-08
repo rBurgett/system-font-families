@@ -3,7 +3,10 @@
 import 'should';
 import SystemFonts from '../src/main';
 import _ from 'lodash';
+import path from 'path';
 
+const customFontFolder = path.join('/', 'Users', 'ryan', 'projects', 'system-font-families', 'test', 'test-folder');
+//Users/ryan/projects/system-font-families/test/test-folder
 describe('SystemFonts', function() {
 
     it('should be a Function', () => {
@@ -12,7 +15,10 @@ describe('SystemFonts', function() {
 
     describe('getFontsExtended method', function() {
 
-        const systemFonts = new SystemFonts();
+        const systemFonts = new SystemFonts({
+            ignoreSystemFonts: false,
+            customDirs: [customFontFolder]
+        });
 
         this.timeout(10000);
 
