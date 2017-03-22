@@ -5,7 +5,6 @@
     "main": "dist/main.js",
     "scripts": {
         "build": "babel src --out-dir dist",
-        "generate-docs": "jsdoc src -r -d docs",
         "watch": "babel src --watch --out-dir dist",
         "test": "mocha --compilers js:babel-register"
     },
