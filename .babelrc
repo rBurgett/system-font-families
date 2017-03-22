@@ -3,5 +3,8 @@
     "presets": [
         "es2015"
     ],
-    "plugins": []
+    "plugins": [
+        "transform-runtime",
+        "transform-object-rest-spread"
+    ]
 }

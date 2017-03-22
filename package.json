@@ -1,33 +1,35 @@
 {
-  "name": "system-font-families",
-  "version": "0.1.0",
-  "description": "Get system font families (all TTF and OTF) using pure JavaScript",
-  "main": "dist/main.js",
-  "scripts": {
-    "build": "babel src --out-dir dist",
-    "generate-docs": "jsdoc src -r -d docs",
-    "watch": "babel src --watch --out-dir dist",
-    "test": "mocha --compilers js:babel-register"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/rBurgett/system-font-families.git"
-  },
-  "devDependencies": {
-    "babel-cli": "^6.7.5",
-    "babel-core": "^6.7.6",
-    "babel-preset-es2015": "^6.6.0",
-    "babel-register": "^6.7.2",
-    "eslint": "^2.7.0",
-    "mocha": "^2.4.5",
-    "should": "^8.3.0"
-  },
-  "author": "Ryan Burgett",
-  "license": "Apache-2.0",
-  "bugs": {
-    "url": "https://github.com/rBurgett/system-font-families/issues"
-  },
-  "dependencies": {
-    "ttfinfo": "https://github.com/rBurgett/ttfinfo.git"
-  }
+    "name": "system-font-families",
+    "version": "0.1.0",
+    "description": "Get system font families (all TTF and OTF) using pure JavaScript",
+    "main": "dist/main.js",
+    "scripts": {
+        "build": "babel src --out-dir dist",
+        "watch": "babel src --watch --out-dir dist",
+        "test": "mocha --compilers js:babel-register"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/rBurgett/system-font-families.git"
+    },
+    "devDependencies": {
+        "babel-cli": "^6.7.5",
+        "babel-core": "^6.7.6",
+        "babel-plugin-transform-object-rest-spread": "^6.22.0",
+        "babel-plugin-transform-runtime": "^6.22.0",
+        "babel-preset-es2015": "^6.6.0",
+        "babel-register": "^6.7.2",
+        "eslint": "^3.14.1",
+        "lodash": "^4.17.4",
+        "mocha": "^2.4.5",
+        "should": "^8.3.0"
+    },
+    "author": "Ryan Burgett",
+    "license": "Apache-2.0",
+    "bugs": {
+        "url": "https://github.com/rBurgett/system-font-families/issues"
+    },
+    "dependencies": {
+        "ttfinfo": "https://github.com/rBurgett/ttfinfo.git"
+    }
 }
