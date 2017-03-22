@@ -78,28 +78,32 @@ var recGetFile = function recGetFile(target) {
     }
 };
 
-var tableToObj = function tableToObj(obj, file) {
+var tableToObj = function tableToObj(obj, file, systemFont) {
     return {
         family: obj['1'],
         subFamily: obj['2'],
-        file: file
+        file: file,
+        systemFont: systemFont
     };
 };
 
 var extendedReducer = function extendedReducer(m, _ref) {
     var family = _ref.family,
         subFamily = _ref.subFamily,
-        file = _ref.file;
+        file = _ref.file,
+        systemFont = _ref.systemFont;
 
     if (m.has(family)) {
         var origFont = m.get(family);
         return m.set(family, (0, _extends4.default)({}, origFont, {
+            systemFont: origFont.systemFont === false ? false : systemFont,
             subFamilies: [].concat((0, _toConsumableArray3.default)(origFont.subFamilies), [subFamily]),
             files: (0, _extends4.default)({}, origFont.files, (0, _defineProperty3.default)({}, subFamily, file))
         }));
     } else {
         return m.set(family, {
             family: family,
+            systemFont: systemFont,
             subFamilies: [subFamily],
             files: (0, _defineProperty3.default)({}, subFamily, file)
         });
@@ -107,6 +111,8 @@ var extendedReducer = function extendedReducer(m, _ref) {
 };
 
 var SystemFonts = function SystemFonts() {
+    var _this = this;
+
     var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
     var _options$ignoreSystem = options.ignoreSystemFonts,
         ignoreSystemFonts = _options$ignoreSystem === undefined ? false : _options$ignoreSystem,
@@ -142,7 +148,7 @@ var SystemFonts = function SystemFonts() {
             directories = [].concat((0, _toConsumableArray3.default)(directories), [_path2.default.join(_home, '.fonts'), _path2.default.join(_home, '.local', 'share', 'fonts'), _path2.default.join('/', 'usr', 'share', 'fonts'), _path2.default.join('/', 'usr', 'local', 'share', 'fonts')]);
         }
 
-        var filesArr = directories.reduce(function (arr, d) {
+        return directories.reduce(function (arr, d) {
             var files = recGetFile(d);
             if (customDirSet.has(d)) {
                 files.forEach(function (f) {
@@ -151,31 +157,30 @@ var SystemFonts = function SystemFonts() {
             }
             return arr.concat(files);
         }, []);
-
-        return filesArr;
     };
 
     var fontFiles = getFontFiles();
 
     this.getFontsExtended = function () {
-        var promiseList = [];
-
-        var filteredFontFiles = !ignoreSystemFonts ? [].concat((0, _toConsumableArray3.default)(fontFiles)) : fontFiles.filter(function (f) {
-            return customFontFiles.has(f);
-        });
-
-        filteredFontFiles.forEach(function (file) {
-            promiseList.push(new _promise2.default(function (resolve) {
-                _ttfinfo2.default.get(file, function (err, fontMeta) {
-                    if (!fontMeta) {
-                        resolve(null);
-                    } else {
-                        resolve(tableToObj(fontMeta.tables.name, file));
-                    }
-                });
-            }));
-        });
         return new _promise2.default(function (resolve, reject) {
+
+            var promiseList = [];
+
+            var filteredFontFiles = !ignoreSystemFonts ? [].concat((0, _toConsumableArray3.default)(fontFiles)) : fontFiles.filter(function (f) {
+                return customFontFiles.has(f);
+            });
+
+            filteredFontFiles.forEach(function (file) {
+                promiseList.push(new _promise2.default(function (resolve1) {
+                    _ttfinfo2.default.get(file, function (err, fontMeta) {
+                        if (!fontMeta) {
+                            resolve1(null);
+                        } else {
+                            resolve1(tableToObj(fontMeta.tables.name, file, !customFontFiles.has(file)));
+                        }
+                    });
+                }));
+            });
             _promise2.default.all(promiseList).then(function (res) {
 
                 var names = res.filter(function (data) {
@@ -206,7 +211,7 @@ var SystemFonts = function SystemFonts() {
             } catch (e) {
                 return arr;
             }
-            return arr.concat([tableToObj(data.tables.name, file)]);
+            return arr.concat([tableToObj(data.tables.name, file, !customFontFiles.has(file))]);
         }, []).filter(function (data) {
             return data ? true : false;
         }).reduce(extendedReducer, new _map2.default());
@@ -219,52 +224,28 @@ var SystemFonts = function SystemFonts() {
     };
 
     this.getFonts = function () {
-        var promiseList = [];
-        fontFiles.filter(function (f) {
-            return !customFontFiles.has(f);
-        }).forEach(function (file) {
-            promiseList.push(new _promise2.default(function (resolve) {
-                _ttfinfo2.default.get(file, function (err, fontMeta) {
-                    if (!fontMeta) {
-                        resolve('');
-                    } else {
-                        resolve(fontMeta.tables.name['1']);
-                    }
-                });
-            }));
-        });
         return new _promise2.default(function (resolve, reject) {
-            _promise2.default.all(promiseList).then(function (res) {
-
-                var names = res.filter(function (data) {
-                    return data ? true : false;
+            _this.getFontsExtended().then(function (fontList) {
+                var names = fontList.map(function (_ref2) {
+                    var family = _ref2.family;
+                    return family;
                 }).reduce(function (obj, name) {
                     obj[name] = 1;
                     return obj;
                 }, {});
-
                 resolve((0, _keys2.default)(names).sort(function (a, b) {
                     return a.localeCompare(b);
                 }));
-            }, function (err) {
+            }).catch(function (err) {
                 return reject(err);
             });
         });
     };
 
     this.getFontsSync = function () {
-        var names = fontFiles.filter(function (f) {
-            return !customFontFiles.has(f);
-        }).reduce(function (arr, file) {
-            var data = void 0;
-            try {
-                data = _ttfinfo2.default.getSync(file);
-            } catch (e) {
-                return arr;
-            }
-            return arr.concat([data]);
-        }, []).map(function (fontMeta) {
-            return fontMeta.tables.name['1'];
+        var names = _this.getFontsExtendedSync().map(function (_ref3) {
+            var family = _ref3.family;
+            return family;
         }).reduce(function (obj, name) {
             obj[name] = 1;
             return obj;
