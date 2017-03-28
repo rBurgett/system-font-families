@@ -30,6 +30,7 @@
     "url": "https://github.com/rBurgett/system-font-families/issues"
   },
   "dependencies": {
+    "babel-polyfill": "^6.23.0",
     "ttfinfo": "https://github.com/rBurgett/ttfinfo.git"
   }
 }
