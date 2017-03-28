@@ -198,4 +198,24 @@ describe('SystemFonts', () => {
 
     });
 
+    describe('getFontFilesSync method', () => {
+        it('should return all TTF and OTF font files', () => {
+            const systemFonts = new SystemFonts();
+            const files = systemFonts.getFontFilesSync();
+            files.length.should.be.greaterThan(0);
+            files.should.be.an.Array();
+            files.every(f => typeof f === 'string').should.be.True();
+        });
+    });
+
+    describe('getAllFontFilesSync method', () => {
+        it('should return all TTF, OTF, TTC, and DFONT files', () => {
+            const systemFonts = new SystemFonts();
+            const files = systemFonts.getAllFontFilesSync();
+            files.length.should.be.greaterThan(0);
+            files.should.be.an.Array();
+            files.every(f => typeof f === 'string').should.be.True();
+        });
+    });
+
 });
