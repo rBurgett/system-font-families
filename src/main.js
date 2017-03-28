@@ -26,13 +26,19 @@ const recGetFile = (target) => {
             }, []);
     } else {
         const ext = path.extname(target).toLowerCase();
-        if (ext === '.ttf' || ext === '.otf') {
+        if (ext === '.ttf' || ext === '.otf' || ext === '.otc' || ext === '.dfont') {
             return [target];
         } else {
             return [];
         }
     }
 };
+
+const filterReadableFonts = arr => arr
+    .filter(f => {
+        const extension = path.extname(f).toLowerCase();
+        return extension === '.ttf' || extension === '.otf';
+    });
 
 const tableToObj = (obj, file, systemFont) => {
     return {
@@ -95,7 +101,8 @@ const SystemFonts = function(options = {}) {
             directories = [
                 ...directories,
                 path.join(home, 'Library', 'Fonts'),
-                path.join('/', 'Library', 'Fonts')
+                path.join('/', 'Library', 'Fonts'),
+                path.join('/', 'System', 'Library', 'Fonts')
             ];
         } else if (platform === 'windows') {
             const winDir = process.env.windir || process.env.WINDIR;
@@ -124,7 +131,15 @@ const SystemFonts = function(options = {}) {
             }, []);
     };
 
-    const fontFiles = getFontFiles();
+    const allFontFiles = getFontFiles();
+
+    // this list includes all TTF, OTF, OTC, and DFONT files
+    this.getAllFontFilesSync = () => [...allFontFiles];
+
+    const fontFiles = filterReadableFonts(allFontFiles);
+
+    // this list includes all TTF and OTF files (these are the ones we parse in this lib)
+    this.getFontFilesSync = () => [...fontFiles];
 
     this.getFontsExtended = () => new Promise((resolve, reject) => {
 

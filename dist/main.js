@@ -32,6 +32,8 @@ var _extends3 = require('babel-runtime/helpers/extends');
 
 var _extends4 = _interopRequireDefault(_extends3);
 
+require('babel-polyfill');
+
 var _fs = require('fs');
 
 var _fs2 = _interopRequireDefault(_fs);
@@ -70,12 +72,19 @@ var recGetFile = function recGetFile(target) {
         }, []);
     } else {
         var ext = _path2.default.extname(target).toLowerCase();
-        if (ext === '.ttf' || ext === '.otf') {
+        if (ext === '.ttf' || ext === '.otf' || ext === '.otc' || ext === '.dfont') {
             return [target];
         } else {
             return [];
         }
     }
+};
+
+var filterReadableFonts = function filterReadableFonts(arr) {
+    return arr.filter(function (f) {
+        var extension = _path2.default.extname(f).toLowerCase();
+        return extension === '.ttf' || extension === '.otf';
+    });
 };
 
 var tableToObj = function tableToObj(obj, file, systemFont) {
@@ -138,7 +147,7 @@ var SystemFonts = function SystemFonts() {
         var platform = getPlatform();
         if (platform === 'osx') {
             var home = process.env.HOME;
-            directories = [].concat((0, _toConsumableArray3.default)(directories), [_path2.default.join(home, 'Library', 'Fonts'), _path2.default.join('/', 'Library', 'Fonts')]);
+            directories = [].concat((0, _toConsumableArray3.default)(directories), [_path2.default.join(home, 'Library', 'Fonts'), _path2.default.join('/', 'Library', 'Fonts'), _path2.default.join('/', 'System', 'Library', 'Fonts')]);
         } else if (platform === 'windows') {
             var winDir = process.env.windir || process.env.WINDIR;
             directories = [].concat((0, _toConsumableArray3.default)(directories), [_path2.default.join(winDir, 'Fonts')]);
@@ -159,7 +168,19 @@ var SystemFonts = function SystemFonts() {
         }, []);
     };
 
-    var fontFiles = getFontFiles();
+    var allFontFiles = getFontFiles();
+
+    // this list includes all TTF, OTF, OTC, and DFONT files
+    this.getAllFontFilesSync = function () {
+        return [].concat((0, _toConsumableArray3.default)(allFontFiles));
+    };
+
+    var fontFiles = filterReadableFonts(allFontFiles);
+
+    // this list includes all TTF and OTF files (these are the ones we parse in this lib)
+    this.getFontFilesSync = function () {
+        return [].concat((0, _toConsumableArray3.default)(fontFiles));
+    };
 
     this.getFontsExtended = function () {
         return new _promise2.default(function (resolve, reject) {
