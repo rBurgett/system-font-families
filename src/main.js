@@ -26,7 +26,7 @@ const recGetFile = (target) => {
             }, []);
     } else {
         const ext = path.extname(target).toLowerCase();
-        if (ext === '.ttf' || ext === '.otf' || ext === '.otc' || ext === '.dfont') {
+        if (ext === '.ttf' || ext === '.otf' || ext === '.ttc' || ext === '.dfont') {
             return [target];
         } else {
             return [];
