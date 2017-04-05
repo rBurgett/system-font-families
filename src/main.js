@@ -44,12 +44,13 @@ const tableToObj = (obj, file, systemFont) => {
     return {
         family: obj['1'],
         subFamily: obj['2'],
+        postscript: obj['6'],
         file,
         systemFont
     };
 };
 
-const extendedReducer = (m, { family, subFamily, file, systemFont }) => {
+const extendedReducer = (m, { family, subFamily, file, postscript, systemFont }) => {
     if (m.has(family)) {
         const origFont = m.get(family);
         return m.set(family, {
@@ -62,6 +63,10 @@ const extendedReducer = (m, { family, subFamily, file, systemFont }) => {
             files: {
                 ...origFont.files,
                 [subFamily]: file
+            },
+            postscriptNames: {
+                ...origFont.postscriptNames,
+                [subFamily]: postscript
             }
         });
     } else {
@@ -71,6 +76,9 @@ const extendedReducer = (m, { family, subFamily, file, systemFont }) => {
             subFamilies: [subFamily],
             files: {
                 [subFamily]: file
+            },
+            postscriptNames: {
+                [subFamily]: postscript
             }
         });
     }
@@ -149,7 +157,7 @@ const SystemFonts = function(options = {}) {
             .filter(f => customFontFiles.has(f));
 
         filteredFontFiles
-            .forEach(file => {
+            .forEach((file, i) => {
                 promiseList.push(new Promise(resolve1 => {
                     ttfInfo.get(file, (err, fontMeta) => {
                         if (!fontMeta) {
