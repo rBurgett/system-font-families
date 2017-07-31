@@ -28,9 +28,9 @@ var _toConsumableArray2 = require('babel-runtime/helpers/toConsumableArray');
 
 var _toConsumableArray3 = _interopRequireDefault(_toConsumableArray2);
 
-var _extends3 = require('babel-runtime/helpers/extends');
+var _extends4 = require('babel-runtime/helpers/extends');
 
-var _extends4 = _interopRequireDefault(_extends3);
+var _extends5 = _interopRequireDefault(_extends4);
 
 require('babel-polyfill');
 
@@ -91,6 +91,7 @@ var tableToObj = function tableToObj(obj, file, systemFont) {
     return {
         family: obj['1'],
         subFamily: obj['2'],
+        postscript: obj['6'],
         file: file,
         systemFont: systemFont
     };
@@ -100,21 +101,24 @@ var extendedReducer = function extendedReducer(m, _ref) {
     var family = _ref.family,
         subFamily = _ref.subFamily,
         file = _ref.file,
+        postscript = _ref.postscript,
         systemFont = _ref.systemFont;
 
     if (m.has(family)) {
         var origFont = m.get(family);
-        return m.set(family, (0, _extends4.default)({}, origFont, {
+        return m.set(family, (0, _extends5.default)({}, origFont, {
             systemFont: origFont.systemFont === false ? false : systemFont,
             subFamilies: [].concat((0, _toConsumableArray3.default)(origFont.subFamilies), [subFamily]),
-            files: (0, _extends4.default)({}, origFont.files, (0, _defineProperty3.default)({}, subFamily, file))
+            files: (0, _extends5.default)({}, origFont.files, (0, _defineProperty3.default)({}, subFamily, file)),
+            postscriptNames: (0, _extends5.default)({}, origFont.postscriptNames, (0, _defineProperty3.default)({}, subFamily, postscript))
         }));
     } else {
         return m.set(family, {
             family: family,
             systemFont: systemFont,
             subFamilies: [subFamily],
-            files: (0, _defineProperty3.default)({}, subFamily, file)
+            files: (0, _defineProperty3.default)({}, subFamily, file),
+            postscriptNames: (0, _defineProperty3.default)({}, subFamily, postscript)
         });
     }
 };
@@ -191,7 +195,7 @@ var SystemFonts = function SystemFonts() {
                 return customFontFiles.has(f);
             });
 
-            filteredFontFiles.forEach(function (file) {
+            filteredFontFiles.forEach(function (file, i) {
                 promiseList.push(new _promise2.default(function (resolve1) {
                     _ttfinfo2.default.get(file, function (err, fontMeta) {
                         if (!fontMeta) {
