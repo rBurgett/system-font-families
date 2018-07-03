@@ -34,3 +34,8 @@ node_modules
 
 .vscode
 .idea
+
+
+dist/
+*.sw*
+.DS_Store
