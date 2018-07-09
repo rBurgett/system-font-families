@@ -1,6 +1,6 @@
 {
   "name": "system-font-families",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Get system font families (all TTF and OTF) using pure JavaScript",
   "main": "dist/main.js",
   "scripts": {
