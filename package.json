@@ -32,6 +32,8 @@
   },
   "dependencies": {
     "babel-polyfill": "^6.23.0",
+    "file-type": "^10.11.0",
+    "read-chunk": "^3.2.0",
     "ttfinfo": "https://github.com/rBurgett/ttfinfo.git"
   }
 }

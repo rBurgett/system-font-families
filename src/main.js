@@ -3,6 +3,9 @@ import os from 'os';
 import path from 'path';
 import ttfInfo from 'ttfinfo';
 
+import readChunk from 'read-chunk';
+import getFileType from 'file-type';
+
 const getPlatform = () => (process.platform === 'darwin') ? 'osx' : (/win/.test(process.platform) ? 'windows' : 'linux');
 
 const recGetFile = (target) => {
@@ -29,6 +32,19 @@ const recGetFile = (target) => {
         const ext = path.extname(target).toLowerCase();
         if (ext === '.ttf' || ext === '.otf' || ext === '.ttc' || ext === '.dfont') {
             return [target];
+        } else if (ext === '') {
+            // NOTE: Check files without extension, TypeKit on Windows does that.
+            const fontFileHeader = readChunk.sync(target, 0, getFileType.minimumBytes);
+            const fileType = getFileType(fontFileHeader);
+            if (!fileType) {
+                return [];
+            }
+
+            if (fileType.ext === 'ttf' || fileType.ext === 'otf' || fileType.ext === 'ttc') {
+                return [target];
+            }
+
+            return [];
         } else {
             return [];
         }
@@ -38,7 +54,21 @@ const recGetFile = (target) => {
 const filterReadableFonts = arr => arr
     .filter(f => {
         const extension = path.extname(f).toLowerCase();
-        return extension === '.ttf' || extension === '.otf';
+        if (extension === '.ttf' || extension === '.otf') {
+            return true;
+        }
+
+        const fontFileHeader = readChunk.sync(f, 0, getFileType.minimumBytes);
+        const fileType = getFileType(fontFileHeader);
+        if (!fileType) {
+            return false;
+        }
+
+        if (fileType.ext === 'ttf' || fileType.ext === 'otf') {
+            return true;
+        }
+
+        return false;
     });
 
 const tableToObj = (obj, file, systemFont) => {
