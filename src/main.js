@@ -19,6 +19,7 @@ const recGetFile = (target) => {
             files = fs.readdirSync(target);
         } catch (e) {
             console.error(e);
+            return [];
         }
         return files
             .reduce((arr, f) => {
