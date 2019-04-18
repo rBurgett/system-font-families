@@ -1,4 +1,5 @@
 import fs from 'fs';
+import os from 'os';
 import path from 'path';
 import ttfInfo from 'ttfinfo';
 
@@ -109,13 +110,15 @@ const SystemFonts = function(options = {}) {
                 ...directories,
                 path.join(home, 'Library', 'Fonts'),
                 path.join('/', 'Library', 'Fonts'),
-                path.join('/', 'System', 'Library', 'Fonts')
+                path.join('/', 'System', 'Library', 'Fonts'),
+                path.join(os.homedir(), 'Library', 'Application Support', 'Adobe', 'CoreSync', 'plugins', 'livetype', '.r')
             ];
         } else if (platform === 'windows') {
             const winDir = process.env.windir || process.env.WINDIR;
             directories = [
                 ...directories,
-                path.join(winDir, 'Fonts')
+                path.join(winDir, 'Fonts'),
+                path.join(os.homedir(), 'AppData', 'Roaming', 'Adobe', 'CoreSync', 'plugins', 'livetype', 'r')
             ];
         } else { // some flavor of Linux, most likely
             const home = process.env.HOME;
