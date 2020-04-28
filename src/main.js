@@ -149,6 +149,7 @@ const SystemFonts = function(options = {}) {
             directories = [
                 ...directories,
                 path.join(winDir, 'Fonts'),
+                path.join(os.homedir(), 'AppData', 'Local', 'Microsoft', 'Windows', 'Fonts'),
                 path.join(os.homedir(), 'AppData', 'Roaming', 'Adobe', 'CoreSync', 'plugins', 'livetype', 'r')
             ];
         } else { // some flavor of Linux, most likely
