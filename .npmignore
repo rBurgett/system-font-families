@@ -2,3 +2,4 @@ src/
 test/
 .babelrc
 .eslintrc.json
+.idea
