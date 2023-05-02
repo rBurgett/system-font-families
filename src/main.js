@@ -210,7 +210,7 @@ const SystemFonts = function(options = {}) {
                     .reduce(extendedReducer, new Map());
 
                 const namesArr = [...names.values()]
-                    .sort((a, b) => a.family.localeCompare(b.family));
+                    .sort((a, b) => a.family && b.family && a.family.localeCompare(b.family));
 
                 resolve(namesArr);
             },
@@ -237,7 +237,7 @@ const SystemFonts = function(options = {}) {
             .reduce(extendedReducer, new Map());
 
         const namesArr = [...names.values()]
-            .sort((a, b) => a.family.localeCompare(b.family));
+            .sort((a, b) => a.family && b.family && a.family.localeCompare(b.family));
 
         return namesArr;
     };
